@@ -22,3 +22,6 @@ bin/tokenguy$(DebugPrefix): makeconfig.env go.mod main.go tokenguy/server.go tok
 	go get -d ./...
 	go build -o bin/tokenguy$(DebugPrefix) -ldflags=$(LDFlags) $(DebugFlags) .
 	chmod +x bin/tokenguy$(DebugPrefix)
+
+docker:
+	docker build -t $(REPOSITORY):$(VERSION) -t $(REPOSITORY):$(COMMIT_HASH) .
