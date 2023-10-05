@@ -18,7 +18,7 @@ clean:
 env:
 	nix-shell
 
-bin/tokenguy$(DebugPrefix): makeconfig.env go.mod main.go tokenguy/server.go tokenguy/cmd/root.go tokenguy/cmd/version.go tokenguy/cmd/server.go
+bin/tokenguy$(DebugPrefix): makeconfig.env go.mod main.go tokenguy/server.go tokenguy/validate.go tokenguy/cmd/root.go tokenguy/cmd/version.go tokenguy/cmd/server.go tokenguy/cmd/validate.go
 	go get -d ./...
 	go build -o bin/tokenguy$(DebugPrefix) -ldflags=$(LDFlags) $(DebugFlags) .
 	chmod +x bin/tokenguy$(DebugPrefix)

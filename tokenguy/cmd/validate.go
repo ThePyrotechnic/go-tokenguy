@@ -16,43 +16,34 @@ Copyright (C) 2022  Michael Manis
 	along with this program; if not, write to the Free Software Foundation,
 	Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package tokenguy
+package cmd
 
 import (
-	"crypto/rsa"
-	"net/http"
+	"fmt"
+	"os"
 
-	"github.com/gin-gonic/gin"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"github.com/thepyrotechnic/go-tokenguy/v2/tokenguy"
 )
 
-var (
-	router      *gin.Engine = nil
-	initialized             = false
-	keys        map[string]*rsa.PublicKey
-)
+func init() {
+	rootCmd.AddCommand(validateCmd)
 
-type TokenWrapper struct {
-	Token string
+	validateCmd.Flags().StringP("keys-directory", "k", "keys", "Path to directory of public keys to use when validating tokens")
+	viper.BindPFlag("server.keys", validateCmd.Flags().Lookup("keys-directory"))
 }
 
-func Router(_keys map[string]*rsa.PublicKey) *gin.Engine {
-	if !initialized {
-		router = gin.Default()
-		router.SetTrustedProxies(nil)
-		router.POST("/validate", postValidate)
-		keys = _keys
-		initialized = true
-	}
-
-	return router
-}
-
-func postValidate(c *gin.Context) {
-	var token TokenWrapper
-	if err := c.ShouldBindJSON(&token); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	isValid := Validate(keys, token.Token)
-	c.JSON(http.StatusOK, gin.H{"valid": isValid})
+var validateCmd = &cobra.Command{
+	Use:   "validate",
+	Short: "validate a JWT passed to stdin",
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println(args[0])
+		if tokenguy.Validate(tokenguy.GetKeys(), args[0]) {
+			os.Exit(0)
+		} else {
+			os.Exit(1)
+		}
+	},
 }

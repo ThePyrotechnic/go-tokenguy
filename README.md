@@ -27,6 +27,8 @@ For production usage, serve the binary via a reverse proxy (like nginx)
 
 ## Usage
 
+### As a web server
+
 Send a POST request to `http://<host>:<port>/validate`
 
 The body should look like: `{"token": "<token>"}`
@@ -39,6 +41,10 @@ The response will be one of the following:
 2. (status code `5XX`) if something is wrong with the server
 3. (status code `200`) `{"valid": true/false}` if the token is valid or invalid
 
+
+### From the CLI
+
+`tokenguy validate --keys-directory <dir> [token]` will check that `token` has been signed by one of the keys in `dir`
 
 ## License and Copyright
 tokenguy is a web server which validates JWTs
