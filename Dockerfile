@@ -10,7 +10,7 @@ RUN ls
 RUN go mod download
 RUN go build -o ./go-tokenguy
 
-FROM alpine:3.16
+FROM alpine:3.19
 
 WORKDIR /app
 COPY --from=0 /app/go-tokenguy .

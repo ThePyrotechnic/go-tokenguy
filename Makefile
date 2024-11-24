@@ -26,6 +26,7 @@ docker:
 deps-upgrade:
 	go get -u
 	go mod tidy
+	echo "Don't forget to update golang in go.mod, .github/workflows/go.yml, and Dockerfile"
 
 tag-commit:
 	echo "git tag -a <version> -m <commit-msg>"
