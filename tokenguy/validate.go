@@ -74,6 +74,10 @@ func Validate(keys map[string]*rsa.PublicKey, tokenString string) bool {
 		}
 	}, jwt.WithValidMethods([]string{"RS256"}))
 
+	if err != nil {
+		return false
+	}
+
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		log.Println(claims["name"], claims["admin"])
 	} else {
