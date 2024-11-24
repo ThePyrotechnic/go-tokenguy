@@ -28,3 +28,4 @@ deps-upgrade:
 	go mod tidy
 
 tag-commit:
+	echo "git tag -a <version> -m <commit-msg>"
