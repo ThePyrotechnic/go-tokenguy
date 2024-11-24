@@ -37,10 +37,9 @@ Set `Content-Type: application/json` in your request
 
 The response will be one of the following:
 
-1. (status code `400`) if something is wrong with your request
-2. (status code `5XX`) if something is wrong with the server
-3. (status code `401`) if the token is invalid
-4. (status code `200`) `{"valid": true}` if the token is valid
+1. (status code `5XX`) if something is wrong with the server
+2. (status code `403`) if the token or your request is invalid for any reason 
+3. (status code `200`) `{"valid": true}` if the token is valid
 
 
 ### From the CLI

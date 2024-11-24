@@ -50,12 +50,13 @@ func Router(_keys map[string]*rsa.PublicKey) *gin.Engine {
 
 func postValidate(c *gin.Context) {
 	var token TokenWrapper
-	if err := c.MustBindWith(&token, binding.JSON); err != nil {
+	if err := c.ShouldBindWith(&token, binding.JSON); err != nil {
+		c.Status(http.StatusForbidden)
 		return
 	}
 	if Validate(keys, token.Token) {
 		c.JSON(http.StatusOK, gin.H{"valid": "true"})
 	} else {
-		c.Status(http.StatusUnauthorized)
+		c.Status(http.StatusForbidden)
 	}
 }
