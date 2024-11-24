@@ -2,7 +2,7 @@
 
 [![Go](https://github.com/ThePyrotechnic/go-tokenguy/actions/workflows/go.yml/badge.svg?branch=master)](https://github.com/ThePyrotechnic/go-tokenguy/actions/workflows/go.yml)
 
-[![Docker Image CI](https://github.com/ThePyrotechnic/go-tokenguy/actions/workflows/docker-image.yml/badge.svg)](https://github.com/ThePyrotechnic/go-tokenguy/actions/workflows/docker-image.yml)
+[![Docker Publish](https://github.com/ThePyrotechnic/go-tokenguy/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/ThePyrotechnic/go-tokenguy/actions/workflows/docker-publish.yml)
 
 
 ## Building
