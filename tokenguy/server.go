@@ -20,6 +20,7 @@ package tokenguy
 
 import (
 	"crypto/rsa"
+	"github.com/gin-gonic/gin/binding"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -32,7 +33,7 @@ var (
 )
 
 type TokenWrapper struct {
-	Token string
+	Token string `json:"token" binding:"required"`
 }
 
 func Router(_keys map[string]*rsa.PublicKey) *gin.Engine {
@@ -49,10 +50,12 @@ func Router(_keys map[string]*rsa.PublicKey) *gin.Engine {
 
 func postValidate(c *gin.Context) {
 	var token TokenWrapper
-	if err := c.ShouldBindJSON(&token); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := c.MustBindWith(&token, binding.JSON); err != nil {
 		return
 	}
-	isValid := Validate(keys, token.Token)
-	c.JSON(http.StatusOK, gin.H{"valid": isValid})
+	if Validate(keys, token.Token) {
+		c.JSON(http.StatusOK, gin.H{"valid": "true"})
+	} else {
+		c.Status(http.StatusUnauthorized)
+	}
 }
