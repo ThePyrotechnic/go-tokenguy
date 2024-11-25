@@ -14,20 +14,24 @@ The binary will be in `/bin/`
 
 ## Running
 
-Place all desired validation keys in a directory
+Place all desired public RS256 keys in a directory
 
-`tokenguy server start --keys-directory <dir>`
+Optionally, place matching RS256 private keys in a separate directory
 
-See `tokenguy server start -h` for more options
+`tokenguy server start --public-keys <public dir> [--private-keys <private dir>]`
+
+See also `tokenguy server start -h`
+
 
 ### TLS
 
-For production usage, serve the binary via a reverse proxy (like nginx)
+For production usage, serve the binary via a reverse proxy (like nginx) and set
+`GIN_MODE=release`
 
 
-## Usage
+## Usage as a web server
 
-### As a web server
+### Validating existing tokens
 
 Send a POST request to `http://<host>:<port>/validate`
 
@@ -41,14 +45,35 @@ The response will be one of the following:
 2. (status code `403`) if the token or your request is invalid for any reason 
 3. (status code `200`) `{"valid": true}` if the token is valid
 
+### Signing new tokens
 
-### From the CLI
+Send a GET request to `http://<host>:<port>/keys`
 
-`tokenguy validate --keys-directory <dir> [token]` will check that `token` has been signed by one of the keys in `dir`
+The response will be `{"keys": [<kid, kid, ...]}`, where the `[<kid>]` array is a list of hashes of the public key
+for each private key in the `--private-keys` directory. Pick one `<kid>`. 
+
+Send a POST request to `http://<host>:<port>/sign`
+
+Set `Content-Type: application/json` in your request
+
+
+The body should look like: `{"kid": "<kid>", "claims": {"claim1": "value", ...}}`
+
+The response will be `{"token": "<token>"}` where `<token>` is a valid JWT with your provided claims, signed
+by the private key corresponding to the public `<kid>` hash you requested
+
+Note that JWTs do not expire by default. If you would like your JWT to expire, add an `exp` to your claims.
+(See also [the full list of "registered claims"](https://datatracker.ietf.org/doc/html/rfc7519#section-4.1))
+
+
+## Usage from the CLI
+
+`tokenguy validate --public-keys <dir> [token]` will check that `token` has been signed by one of the keys in `<dir>`
+
 
 ## License and Copyright
 tokenguy is a web server which validates JWTs
-Copyright (C) 2022  Michael Manis
+Copyright (C) 2024  Michael Manis
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
