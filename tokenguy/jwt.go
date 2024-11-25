@@ -143,11 +143,5 @@ func Validate(keys map[string]*rsa.PublicKey, tokenString string) bool {
 		return false
 	}
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		log.Println(claims["name"], claims["admin"])
-	} else {
-		log.Println(err)
-	}
-
 	return token.Valid
 }

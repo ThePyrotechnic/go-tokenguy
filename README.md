@@ -49,7 +49,7 @@ The response will be one of the following:
 
 Send a GET request to `http://<host>:<port>/keys`
 
-The response will be `{"keys": [<kid, kid, ...]}`, where the `[<kid>]` array is a list of hashes of the public key
+The response will be `{"keys": [<kid>, <kid>, ...]}`, where the `[<kid>]` array is a list of hashes of the public key
 for each private key in the `--private-keys` directory. Pick one `<kid>`. 
 
 Send a POST request to `http://<host>:<port>/sign`
