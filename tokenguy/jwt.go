@@ -20,30 +20,46 @@ package tokenguy
 
 import (
 	"crypto/rsa"
+	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/spf13/viper"
 )
 
-func GetKeys() map[string]*rsa.PublicKey {
-	keysDir := viper.GetString("server.keys")
-	fileinfo, err := os.Stat(keysDir)
+func getKeys(dir string) ([]string, error) {
+	fileInfo, err := os.Stat(dir)
 	if err != nil {
 		panic(err)
 	}
-	if !fileinfo.IsDir() {
-		panic(fmt.Errorf("Provided keys directory is not a directory"))
+	if !fileInfo.IsDir() {
+		return []string{}, fmt.Errorf("provided keys directory is not a directory")
 	}
-	matches, err := filepath.Glob(filepath.Join(keysDir, "*"))
+	matches, err := filepath.Glob(filepath.Join(dir, "*"))
 	if err != nil {
-		panic(err)
+		return []string{}, err
 	}
 	if matches == nil {
-		panic(fmt.Errorf("Provided keys directory is empty"))
+		return []string{}, fmt.Errorf("provided keys directory is empty")
+	}
+	return matches, nil
+}
+
+func pubKeyDigest(data []byte) string {
+	h := sha256.New()
+	h.Write(data)
+	return fmt.Sprintf("%x", h.Sum(nil))
+}
+
+func GetPublicKeys() map[string]*rsa.PublicKey {
+	keysDir := viper.GetString("server.keys.public")
+	matches, err := getKeys(keysDir)
+	if err != nil {
+		panic(err)
 	}
 
 	keyMap := make(map[string]*rsa.PublicKey)
@@ -51,15 +67,64 @@ func GetKeys() map[string]*rsa.PublicKey {
 		data, err := os.ReadFile(matches[a])
 		if err != nil {
 			log.Println(matches[a], ": ", err)
+			continue
 		}
+
 		key, err := jwt.ParseRSAPublicKeyFromPEM(data)
 		if err != nil {
 			log.Println(matches[a], ": ", err)
+			continue
 		}
-		keyMap[filepath.Base(matches[a])] = key
+		hDigest := pubKeyDigest(key.N.Bytes())
+		keyMap[hDigest] = key
 	}
 
 	return keyMap
+}
+
+func GetPrivateKeys() map[string]*rsa.PrivateKey {
+	keysDir := viper.GetString("server.keys.private")
+	matches, err := getKeys(keysDir)
+	if err != nil {
+		panic(err)
+	}
+
+	keyMap := make(map[string]*rsa.PrivateKey)
+	for a := 0; a < len(matches); a++ {
+		data, err := os.ReadFile(matches[a])
+		if err != nil {
+			log.Println(matches[a], ": ", err)
+			continue
+		}
+		key, err := jwt.ParseRSAPrivateKeyFromPEM(data)
+		if err != nil {
+			log.Println(matches[a], ": ", err)
+			continue
+		}
+
+		keyMap[pubKeyDigest(key.PublicKey.N.Bytes())] = key
+	}
+
+	return keyMap
+}
+
+func Sign(kid string, key *rsa.PrivateKey, claims string) (string, error) {
+	token := jwt.New(jwt.SigningMethodRS256)
+	token.Header["kid"] = kid
+
+	h, err := json.Marshal(token.Header)
+	if err != nil {
+		return "", err
+	}
+
+	signingString := token.EncodeSegment(h) + "." + token.EncodeSegment([]byte(claims))
+
+	sig, err := token.Method.Sign(signingString, key)
+	if err != nil {
+		return "", err
+	}
+
+	return signingString + "." + token.EncodeSegment(sig), nil
 }
 
 func Validate(keys map[string]*rsa.PublicKey, tokenString string) bool {

@@ -33,10 +33,12 @@ func init() {
 
 	startServerCmd.Flags().StringP("port", "p", "6666", "Server port")
 	startServerCmd.Flags().StringP("host", "a", "0.0.0.0", "Server host address")
-	startServerCmd.Flags().StringP("keys-directory", "k", "keys", "Path to directory of public keys to use when validating tokens")
+	startServerCmd.Flags().StringP("public-keys", "k", "keys/public", "Path to directory of public keys to use when validating tokens")
+	startServerCmd.Flags().StringP("private-keys", "e", "keys/private", "Path to directory of private keys to use when signing tokens")
 	viper.BindPFlag("server.host", startServerCmd.Flags().Lookup("host"))
 	viper.BindPFlag("server.port", startServerCmd.Flags().Lookup("port"))
-	viper.BindPFlag("server.keys", startServerCmd.Flags().Lookup("keys-directory"))
+	viper.BindPFlag("server.keys.public", startServerCmd.Flags().Lookup("public-keys"))
+	viper.BindPFlag("server.keys.private", startServerCmd.Flags().Lookup("private-keys"))
 }
 
 var serverCmd = &cobra.Command{
@@ -56,10 +58,13 @@ var startServerCmd = &cobra.Command{
 		host := viper.GetString("server.host")
 		port := viper.GetString("server.port")
 
-		router := tokenguy.Router(tokenguy.GetKeys())
+		pubKeys := tokenguy.GetPublicKeys()
+		privKeys := tokenguy.GetPrivateKeys()
+
+		router := tokenguy.Router(pubKeys, privKeys)
 		fmt.Printf("Starting API server on http://%s:%s ...\n", host, port)
 		if err := router.Run(fmt.Sprintf("%s:%s", host, port)); err != nil {
-			panic(fmt.Errorf("Error starting server: %s", err))
+			panic(fmt.Errorf("error starting server: %s", err))
 		}
 	},
 }

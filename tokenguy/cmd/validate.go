@@ -30,8 +30,8 @@ import (
 func init() {
 	rootCmd.AddCommand(validateCmd)
 
-	validateCmd.Flags().StringP("keys-directory", "k", "keys", "Path to directory of public keys to use when validating tokens")
-	viper.BindPFlag("server.keys", validateCmd.Flags().Lookup("keys-directory"))
+	validateCmd.Flags().StringP("public-keys", "k", "keys/public", "Path to directory of public keys to use when validating tokens")
+	viper.BindPFlag("server.keys.public", validateCmd.Flags().Lookup("public-keys"))
 }
 
 var validateCmd = &cobra.Command{
@@ -40,7 +40,7 @@ var validateCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println(args[0])
-		if tokenguy.Validate(tokenguy.GetKeys(), args[0]) {
+		if tokenguy.Validate(tokenguy.GetPublicKeys(), args[0]) {
 			os.Exit(0)
 		} else {
 			os.Exit(1)

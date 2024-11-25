@@ -15,7 +15,7 @@ debug: bin/$(ARCH)/tokenguy$(DebugPrefix)
 clean:
 	-rm -r bin/*
 
-bin/%/tokenguy$(DebugPrefix): makeconfig.env go.mod main.go tokenguy/server.go tokenguy/validate.go tokenguy/cmd/root.go tokenguy/cmd/version.go tokenguy/cmd/server.go tokenguy/cmd/validate.go
+bin/%/tokenguy$(DebugPrefix): makeconfig.env go.mod main.go tokenguy/server.go tokenguy/jwt.go tokenguy/cmd/root.go tokenguy/cmd/version.go tokenguy/cmd/server.go tokenguy/cmd/validate.go
 	go get ./...
 	GOARCH=$(ARCH) go build -o bin/$(ARCH)/tokenguy$(DebugPrefix) -ldflags=$(LDFlags) $(DebugFlags) .
 	chmod +x bin/$(ARCH)/tokenguy$(DebugPrefix)
